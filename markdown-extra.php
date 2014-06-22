@@ -34,12 +34,13 @@ define( 'MARKDOWNEXTRA_VERSION',  "1.2.8" ); # 29 Nov 2013
 @define( 'MARKDOWN_FN_LINK_CLASS',         "" );
 @define( 'MARKDOWN_FN_BACKLINK_CLASS',     "" );
 
+@define( 'MARKDOWN_CODE_LANGUAGE_PREFIX', "lang-");
 # Optional class prefix for fenced code block.
-@define( 'MARKDOWN_CODE_CLASS_PREFIX',     "" );
+@define( 'MARKDOWN_CODE_CLASS_PREFIX',     "prettyprint " );
 
 # Class attribute for code blocks goes on the `code` tag;
 # setting this to true will put attributes on the `pre` tag instead.
-@define( 'MARKDOWN_CODE_ATTR_ON_PRE',   false );
+@define( 'MARKDOWN_CODE_ATTR_ON_PRE',   true );
 
 
 
@@ -1013,7 +1014,7 @@ class Markdown_Parser {
 
 	function doCodeBlocks($text) {
 	#
-	#	Process Markdown `<pre><code>` blocks.
+	#	Process Markdown `<pre>` blocks.
 	#
 		$text = preg_replace_callback('{
 				(?:\n\n|\A\n?)
@@ -1038,7 +1039,7 @@ class Markdown_Parser {
 		# trim leading newlines and trailing newlines
 		$codeblock = preg_replace('/\A\n+|\n+\z/', '', $codeblock);
 
-		$codeblock = "<pre><code>$codeblock\n</code></pre>";
+		$codeblock = "<pre class=\"{$this->code_class_prefix}\">$codeblock\n</pre>";
 		return "\n\n".$this->hashBlock($codeblock)."\n\n";
 	}
 
@@ -1613,6 +1614,7 @@ class MarkdownExtra_Parser extends Markdown_Parser {
 	var $fn_backlink_class = MARKDOWN_FN_BACKLINK_CLASS;
 
 	# Optional class prefix for fenced code block.
+	var $code_language_prefix = MARKDOWN_CODE_LANGUAGE_PREFIX;
 	var $code_class_prefix = MARKDOWN_CODE_CLASS_PREFIX;
 	# Class attribute for code blocks goes on the `code` tag;
 	# setting this to true will put attributes on the `pre` tag instead.
@@ -2865,13 +2867,14 @@ class MarkdownExtra_Parser extends Markdown_Parser {
 		if ($classname != "") {
 			if ($classname{0} == '.')
 				$classname = substr($classname, 1);
-			$attr_str = ' class="'.$this->code_class_prefix.$classname.'"';
+			$attr_str = ' class="'.$this->code_class_prefix.$this->code_language_prefix.$classname.'"';
 		} else {
-			$attr_str = $this->doExtraAttributes($this->code_attr_on_pre ? "pre" : "code", $attrs);
+			// $attr_str = $this->doExtraAttributes($this->code_attr_on_pre ? "pre" : "code", $attrs);
+			$attr_str = ' class="'.$this->code_class_prefix.'"';
 		}
 		$pre_attr_str  = $this->code_attr_on_pre ? $attr_str : '';
 		$code_attr_str = $this->code_attr_on_pre ? '' : $attr_str;
-		$codeblock  = "<pre$pre_attr_str><code$code_attr_str>$codeblock</code></pre>";
+		$codeblock  = "<pre$pre_attr_str>$codeblock</pre>";
 		
 		return "\n\n".$this->hashBlock($codeblock)."\n\n";
 	}
